@@ -4,6 +4,21 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#ifndef DJS_DEBUG
+ #define DJS_DEBUG (0)
+#endif
+
+#ifndef DJS_STRICT
+ #define DJS_STRICT (0)
+#endif
+
+#if DJS_DEBUG
+ #define DBG(...) printf(__VA_ARGS__)
+#else
+ #define DBG(...) 
+#endif
+
+
 // private to djs
 bool       djs_trim(djs_tok_t &vt);
 const char *djs_type2str(djs_tok_t t);
@@ -28,7 +43,7 @@ djs_detType(djs_tok_t it) {
   done |= (i == it.e);
  }
  it.t = rt;
- // printf("type %s\n",djs_type2str(it));
+ // DBG("type %s\n",djs_type2str(it));
  return rt;
 };
 
@@ -50,7 +65,7 @@ djs_tok_t djs_createNull() {
 void
 showRange(const char *s,int b, int e) {
  for (int i=b;i<=e;i++) {
-  printf("%c",s[i]);
+  DBG("%c",s[i]);
  }
 };
 
@@ -75,14 +90,14 @@ const char *djs_type2str(djs_tok_t t) {
 
 void djs_showTok(const djs_tok_t t) {
  if (t.v) {
-  printf("tok [%d,%d] (%s) >>",
+  DBG("tok [%d,%d] (%s) >>",
 		  t.b,t.e,djs_type2str(t));
   for (int i=t.b;i<=t.e;i++) {
-   printf("%c",t.s[i]);
+   DBG("%c",t.s[i]);
   }
-  printf("<<\n");
+  DBG("<<\n");
  } else {
-  printf("tok [invalid]\n");
+  DBG("tok [invalid]\n");
  }
 };
 
@@ -114,7 +129,7 @@ bool djs_trim(djs_tok_t &vt) {
    if (vt.t == djs_string) {
     if (vt.s[j] == '"') {
      qcount += 1;
-     // printf("qcount %d\n",qcount);
+     // DBG("qcount %d\n",qcount);
      if (qcount == 1) { trimmable = true; }
     }
    }
@@ -161,10 +176,10 @@ djs_getBlob(const djs_tok_t st, djs_tok_t &left, djs_tok_t &right) {
     right.b = i+1;
     if (left.e >= left.b) {
      left.t = djs_detType(left);
-     //printf("blob before trim\n");
+     //DBG("blob before trim\n");
      // djs_showTok(left);
      djs_trim(left);
-     printf("blob after trim\n");
+     DBG("blob after trim\n");
      djs_showTok(left);
      return true;
     } else {
@@ -194,14 +209,14 @@ int djs_fA2(const djs_tok_t st, bool find, const int idx , djs_tok_t &left) {
   while (djs_getBlob(stc,left,right)) {
    //if (left.b != left.e) {
    if (left.v) {
-    printf("incrementing vcount\n");
+    DBG("incrementing vcount\n");
     vcount++;
     left.v = true;
     djs_showTok(left);
    }
    if (find && ((vcount-1) == idx)) {
     // left.t = djs_detType(left);
-    printf("we found:\n");
+    DBG("we found:\n");
     djs_showTok(left);
     return 1;
    }
@@ -258,17 +273,17 @@ bool djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t &vt) {
       in_string = false;
       ns = djs_st_key_done;
       kt.e = i-1;
-      printf("key is: ");
+      DBG("key is: ");
       showRange(kt.s,kt.b,kt.e);
-      printf("\n");
+      DBG("\n");
      } else if (!in_string && (inch == ':')) {
       ns = djs_st_in_value; 
       kt.e = i-1;
       if (i+1 <= str.e) str.b = i+1;
       else return false;
-      printf("key is: ");
+      DBG("key is: ");
       showRange(kt.s,kt.b,kt.e);
-      printf("\n");
+      DBG("\n");
      }
      break;
     case djs_st_key_done :
@@ -295,7 +310,7 @@ bool djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t &vt) {
     default :
      break;
    }
-   if (0) printf("depth %d i %d cs %d ns %d ch %c\n",depth,i,cs,ns,inch);
+   if (0) DBG("depth %d i %d cs %d ns %d ch %c\n",depth,i,cs,ns,inch);
    cs = ns;
    lastch = inch;
   }
@@ -324,10 +339,12 @@ bool djs_getInt(const djs_tok_t t, int &v) {
    char temp[20];
    char *eptr;
    djs_getStr(t,temp,20);
-   printf("temp is \"%s\"\n",temp);
+   DBG("temp is \"%s\"\n",temp);
    v = strtol(temp,&eptr,10);
    if (temp == eptr) return false; // checks if some of input was consumed
-   //if (*eptr == 0)   return false; // checks if all of input was consumed
+#if DJS_STRICT
+   if (*eptr == 0)   return false; // checks if all of input was consumed
+#endif
    return true;
  }
  return false;
