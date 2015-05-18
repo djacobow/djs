@@ -197,6 +197,11 @@ djs_getBlob(const djs_tok_t st, djs_tok_t &left, djs_tok_t &right) {
 };
 
 
+// this routine does double duty to find an element at 
+// an index location, and also to return the number of 
+// elements in an array. The find parameters determines
+// what the return value is: true/false for found at index
+// or the number of elems in the array
 int djs_fA2(const djs_tok_t st, bool find, const int idx , djs_tok_t &left) {
  int vcount = 0;
  djs_tok_t stc = st;
