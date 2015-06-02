@@ -3,6 +3,8 @@
 #include <string.h>
 #include "djs.h"
 
+#define TEST_DEBUG (0)
+
 void loadFile(char *dst, const char *fn) {
  FILE *f = fopen(fn,"r");
  int idx = 0;
@@ -49,6 +51,17 @@ int eF(int a) {
   printf("FAIL expected false\n");
  }
  return 1;
+}
+
+int tests_7() {
+ const char ts[] = "{\"lookup\":\"ok\",\"ip\":\"8.8.8.8\"}";
+ int fc = 0;
+ djs_tok_t w = djs_createFrom(ts);
+ djs_tok_t t1, t2;
+ fc += eT(w.v);
+ fc += eT(djs_findNamed(w,"lookup",t1));
+ fc += eT(djs_findNamed(w,"ip",t2)); 
+ return fc;
 }
 
 int tests_6() {
@@ -106,7 +119,7 @@ int tests_4() {
  loadFile(tdata,"inputs/ex3.json");
 
  djs_tok_t w2 = djs_createFrom(tdata);
- djs_showTok(w2);
+ djs_showTok(w2,TEST_DEBUG);
 
  const char *svals[] = {
   "this",
@@ -141,7 +154,7 @@ int tests_3() {
  loadFile(tdata,"inputs/ex2.json");
 
  djs_tok_t w2 = djs_createFrom(tdata);
- djs_showTok(w2);
+ djs_showTok(w2,TEST_DEBUG);
 
  const char *digits[] = {
   "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"
@@ -238,6 +251,7 @@ int main(int argc, char *argv[]) {
  tests_3();
  tests_4();
  tests_6();
+ tests_7();
  return 0;
 
 };

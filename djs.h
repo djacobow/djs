@@ -32,7 +32,7 @@ typedef struct djs_tok_t {
 
 djs_tok_t djs_createFrom(const char *src);
 bool      djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t &vt);
-void      djs_showTok(const djs_tok_t t);
+void      djs_showTok(const djs_tok_t t, bool show = true);
 bool      djs_getInt(const djs_tok_t t, int &v);
 bool      djs_getStr(const djs_tok_t t, char *s, int sl);
 bool      djs_findIndex(const djs_tok_t st, const int idx, djs_tok_t &vt);

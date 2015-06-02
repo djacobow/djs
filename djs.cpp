@@ -43,7 +43,7 @@ djs_detType(djs_tok_t it) {
   done |= (i == it.e);
  }
  it.t = rt;
- // DBG("type %s\n",djs_type2str(it));
+ DBG("type %s\n",djs_type2str(it));
  return rt;
 };
 
@@ -88,16 +88,17 @@ const char *djs_type2str(djs_tok_t t) {
 	 (t.t == djs_naked)  ? "nakd" : "????");
 }
 
-void djs_showTok(const djs_tok_t t) {
+void djs_showTok(const djs_tok_t t, bool show) {
+ if (!show) return;
  if (t.v) {
-  DBG("tok [%d,%d] (%s) >>",
+  printf("tok [%d,%d] (%s) >>",
 		  t.b,t.e,djs_type2str(t));
   for (int i=t.b;i<=t.e;i++) {
-   DBG("%c",t.s[i]);
+   printf("%c",t.s[i]);
   }
-  DBG("<<\n");
+  printf("<<\n");
  } else {
-  DBG("tok [invalid]\n");
+  printf("tok [invalid]\n");
  }
 };
 
@@ -177,10 +178,10 @@ djs_getBlob(const djs_tok_t st, djs_tok_t &left, djs_tok_t &right) {
     if (left.e >= left.b) {
      left.t = djs_detType(left);
      //DBG("blob before trim\n");
-     // djs_showTok(left);
+     // djs_showTok(left,DJS_DEBUG);
      djs_trim(left);
      DBG("blob after trim\n");
-     djs_showTok(left);
+     djs_showTok(left,DJS_DEBUG);
      return true;
     } else {
 
@@ -197,11 +198,6 @@ djs_getBlob(const djs_tok_t st, djs_tok_t &left, djs_tok_t &right) {
 };
 
 
-// this routine does double duty to find an element at 
-// an index location, and also to return the number of 
-// elements in an array. The find parameters determines
-// what the return value is: true/false for found at index
-// or the number of elems in the array
 int djs_fA2(const djs_tok_t st, bool find, const int idx , djs_tok_t &left) {
  int vcount = 0;
  djs_tok_t stc = st;
@@ -217,12 +213,12 @@ int djs_fA2(const djs_tok_t st, bool find, const int idx , djs_tok_t &left) {
     DBG("incrementing vcount\n");
     vcount++;
     left.v = true;
-    djs_showTok(left);
+    djs_showTok(left,DJS_DEBUG);
    }
    if (find && ((vcount-1) == idx)) {
     // left.t = djs_detType(left);
     DBG("we found:\n");
-    djs_showTok(left);
+    djs_showTok(left,DJS_DEBUG);
     return 1;
    }
    stc.b = right.b;
@@ -237,6 +233,7 @@ int djs_fA2(const djs_tok_t st, bool find, const int idx , djs_tok_t &left) {
 
 
 bool djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t &vt) {
+ DBG("findNamed\n");
  int depth = 0;
  bool in_string = 0;
  djs_tok_t str = st;
@@ -278,7 +275,7 @@ bool djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t &vt) {
       in_string = false;
       ns = djs_st_key_done;
       kt.e = i-1;
-      DBG("key is: ");
+      DBG("X key is: ");
       showRange(kt.s,kt.b,kt.e);
       DBG("\n");
      } else if (!in_string && (inch == ':')) {
@@ -286,7 +283,7 @@ bool djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t &vt) {
       kt.e = i-1;
       if (i+1 <= str.e) str.b = i+1;
       else return false;
-      DBG("key is: ");
+      DBG("Y key is: ");
       showRange(kt.s,kt.b,kt.e);
       DBG("\n");
      }
@@ -300,9 +297,15 @@ bool djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t &vt) {
      break;
     case djs_st_in_value :
      if (djs_getBlob(str,left,right)) {
+      DBG("got blob");
+      DBG("LEFT");
+      djs_showTok(left,DJS_DEBUG);
+      DBG("RIGHT");
+      djs_showTok(right,DJS_DEBUG);
+
       ns = djs_st_value_done;
       str = right;
-      i   = right.b;
+      i   = right.b -1; // -1 because loop incrs
       if (djs_strEql(kt,ss)) {
        vt = left;
        vt.v = true;
