@@ -4,6 +4,8 @@
  "other": {
   "this": "notthat",
   "thing": 2345,
+  "smelly": true,
+  "ugly": false,
   "zippy": [
    8,
    6,
