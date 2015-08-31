@@ -1,7 +1,7 @@
 
 # djs
 
-## A really minimalist JSON parser
+## A really, really minimalist JSON parser
 
 Sure, there are plenty of JSON parsers out there, including some 
 that claim to be fast, some that claim to be complete and super-
@@ -102,4 +102,8 @@ and sweet test program is included in the src/ folder, along with
 some input JSON files in inputs/
 
 
+#### See Also
+
+* [JSMN](http://zserge.com/jsmn.html) Another minimalist JSON parser. It renders its tokens into an array you must provide for.
+* [Rapidjson](http://rapidjson.org/) A C++ does-it-all JSON parser, including Unicode.. Very fast, but not light on resources of code or the memory used for the DOM tree. It has a SAX mode, though, if you want to deal with that..
 
