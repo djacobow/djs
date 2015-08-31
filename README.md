@@ -84,6 +84,16 @@ int main(int argc, char *argv[]) {
 
 ```
 
+Output:
+
+```
+foo value was: fooval
+bar value was: 42
+baz has 3 elems
+baz array content: 0, 1, two
+```
+
+
 ### Testing
 
 This module has only been informally tested, so it is best in 
