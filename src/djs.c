@@ -21,21 +21,20 @@
 
 // private to djs
 bool       djs_trim(djs_tok_t *vt);
-const char *djs_type2str(djs_tok_t t);
+const char *djs_type2str(const djs_tok_t *t);
 djs_tok_t  djs_createNull();
-bool       djs_strEql(const djs_tok_t kt, const char *ks);
-int        djs_fA2(const djs_tok_t st, bool find, const int idx,  djs_tok_t *vt);
-bool       djs_getBlob(const djs_tok_t st, djs_tok_t *left, djs_tok_t *right);
+bool       djs_strEql(const djs_tok_t *kt, const char *ks);
+int        djs_fA2(const djs_tok_t *st, bool find, const int idx,  djs_tok_t *vt);
+bool       djs_getBlob(const djs_tok_t *st, djs_tok_t *left, djs_tok_t *right);
 
 
 djs_type_t
-djs_detType(djs_tok_t it) {
-    if (it.t == _djs_na) return _djs_na;
+djs_detType(djs_tok_t *it) {
+    if (it->t == _djs_na) return _djs_na;
     djs_type_t rt = djs_naked;
-    const char *ns = it.bs;
+    const char *ns = it->bs;
     bool done = false;
     while (!done) {
-        // printf("i %d s %llx ns %llx it.s[i] %llx\n",i,it.s,ns,&it.s[i]);
         if      (*ns  == '[') {
             rt = djs_array;
             done = true;
@@ -47,9 +46,9 @@ djs_detType(djs_tok_t it) {
             done = true;
         } else if (isgraph(*ns)) done = true;
         ns++;
-        done |= (ns == it.es);
+        done |= (ns == it->es);
     }
-    it.t = rt;
+    it->t = rt;
     DBG("type %s\n",djs_type2str(it));
     return rt;
 };
@@ -59,7 +58,7 @@ djs_tok_t djs_createFrom(const char *src) {
     ot.bs = src;
     ot.es = ot.bs + strlen(src)-1;
     ot.t = _djs_valid_untyped;
-    ot.t = djs_detType(ot);
+    ot.t = djs_detType(&ot);
     return ot;
 };
 
@@ -76,37 +75,37 @@ showRange(const char *bs, const char *es) {
     }
 };
 
-bool djs_strEql(const djs_tok_t kt, const char *ks) {
-    if (kt.t == _djs_na) return false;
+bool djs_strEql(const djs_tok_t *kt, const char *ks) {
+    if (kt->t == _djs_na) return false;
     int ksl = strlen(ks);
-    int ktl = (kt.es - kt.bs) + 1;
+    int ktl = (kt->es - kt->bs) + 1;
     if (!strlen(ks)) return false;
     if (ksl != ktl)  return false;
-    const char *ts = kt.bs;
+    const char *ts = kt->bs;
     for (int i=0; i<ksl; i++) {
         if (ks[i] != *ts++) return false;
     }
     return true;
 };
 
-const char *djs_type2str(djs_tok_t t) {
-    return ((t.t == djs_hash)   ? "hash" :
-            (t.t == djs_string) ? "str " :
-            (t.t == djs_array)  ? "arry" :
-            (t.t == djs_naked)  ? "nakd" : "????");
+const char *djs_type2str(const djs_tok_t *t) {
+    return ((t->t == djs_hash)   ? "hash" :
+            (t->t == djs_string) ? "str " :
+            (t->t == djs_array)  ? "arry" :
+            (t->t == djs_naked)  ? "nakd" : "????");
 }
 
-void djs_showTok(const djs_tok_t t, bool show) {
+void djs_showTok(const djs_tok_t *t, bool show) {
     if (!show) return;
-    if (t.t != _djs_na) {
+    if (t->t != _djs_na) {
 #if (__SIZEOF_POINTER__ == 8)
             printf("tok [%lx,%lx,%lu] (%s) >>",
-               (uint64_t)t.bs,(uint64_t)t.es,(uint64_t)(t.es-t.bs), djs_type2str(t));
+               (uint64_t)t->bs,(uint64_t)t->es,(uint64_t)(t->es-t->bs), djs_type2str(t));
 #else
             printf("tok [%x,%x,%d] (%s) >>",
-               (uint32_t)t.bs,(uint32_t)t.es,t.es-t.bs, djs_type2str(t));
+               (uint32_t)t->bs,(uint32_t)t->es,t->es-t->bs, djs_type2str(t));
 #endif
-        for (const char *is=t.bs; is<=t.es; is++) {
+        for (const char *is=t->bs; is<=t->es; is++) {
             printf("%c",*is);
         }
         printf("<<\n");
@@ -156,25 +155,25 @@ bool djs_trim(djs_tok_t *vt) {
     return (fix_count > 0);
 }
 
-bool djs_findIndex(const djs_tok_t st, const int idx, djs_tok_t *vt) {
+bool djs_findIndex(const djs_tok_t *st, const int idx, djs_tok_t *vt) {
     return djs_fA2(st, true, idx, vt);
 }
-int djs_getLength(const djs_tok_t st) {
+int djs_getLength(const djs_tok_t *st) {
     djs_tok_t dummy;
     return djs_fA2(st, false, 0, &dummy);
 }
 
 bool
-djs_getBlob(const djs_tok_t st, djs_tok_t *left, djs_tok_t *right) {
-    *left = st;
-    *right = st;
+djs_getBlob(const djs_tok_t *st, djs_tok_t *left, djs_tok_t *right) {
+    *left = *st;
+    *right = *st;
 
-    if (st.t != _djs_na) {
+    if (st->t != _djs_na) {
         char lastch = 0;
         bool in_string = false;
         int depth = 0;
         int last_depth = 0;
-        for (const char *is=st.bs; is<=st.es; is++) {
+        for (const char *is=st->bs; is<=st->es; is++) {
             char inch = *is;
             if ((inch == '"') && (lastch != '\\'))  in_string = !in_string;
             if (!in_string) {
@@ -188,12 +187,12 @@ djs_getBlob(const djs_tok_t st, djs_tok_t *left, djs_tok_t *right) {
                 left->es = is-1;
                 right->bs = is+1;
                 if (left->es >= left->bs) {
-                    left->t = djs_detType(*left);
+                    left->t = djs_detType(left);
                     //DBG("blob before trim\n");
                     // djs_showTok(left,DJS_DEBUG);
                     djs_trim(left);
                     DBG("blob after trim\n");
-                    djs_showTok(*left,DJS_DEBUG);
+                    djs_showTok(left,DJS_DEBUG);
                     return true;
                 } else {
 
@@ -210,24 +209,24 @@ djs_getBlob(const djs_tok_t st, djs_tok_t *left, djs_tok_t *right) {
 };
 
 
-int djs_fA2(const djs_tok_t st, bool find, const int idx , djs_tok_t *left) {
+int djs_fA2(const djs_tok_t *st, bool find, const int idx , djs_tok_t *left) {
     int vcount = 0;
-    djs_tok_t stc = st;
-    *left = st;
+    djs_tok_t stc = *st;
+    *left = *st;
     left->t = _djs_na;
-    if (st.t == djs_array) {
-        while ((*stc.bs != '[') && (stc.bs <= st.es)) stc.bs++;
+    if (st->t == djs_array) {
+        while ((*stc.bs != '[') && (stc.bs <= st->es)) stc.bs++;
         stc.bs++;
         djs_tok_t right;
-        while (djs_getBlob(stc,left,&right)) {
+        while (djs_getBlob(&stc,left,&right)) {
             if (left->t != _djs_na) {
                 DBG("incrementing vcount\n");
                 vcount++;
-                djs_showTok(*left,DJS_DEBUG);
+                djs_showTok(left,DJS_DEBUG);
             }
             if (find && ((vcount-1) == idx)) {
                 DBG("we found:\n");
-                djs_showTok(*left,DJS_DEBUG);
+                djs_showTok(left,DJS_DEBUG);
                 return 1;
             }
             stc.bs = right.bs;
@@ -241,16 +240,16 @@ int djs_fA2(const djs_tok_t st, bool find, const int idx , djs_tok_t *left) {
 
 
 
-bool djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t *vt) {
+bool djs_findNamed(const djs_tok_t *st, const char *ss, djs_tok_t *vt) {
     DBG("findNamed\n");
     int depth = 0;
     bool in_string = 0;
-    djs_tok_t str = st;
+    djs_tok_t str = *st;
     djs_state_t cs = djs_st_start;
     djs_state_t ns = cs;
-    djs_tok_t   kt = st;
+    djs_tok_t   kt = *st;
     djs_tok_t   left, right;
-    *vt = st;
+    *vt = *st;
     if (str.t == djs_hash) {
         char lastch = 0;
         for (const char *is=str.bs; is<str.es; is++) {
@@ -305,20 +304,20 @@ bool djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t *vt) {
                 };
                 break;
             case djs_st_in_value :
-                if (djs_getBlob(str,&left,&right)) {
+                if (djs_getBlob(&str,&left,&right)) {
                     DBG("got blob");
                     DBG("LEFT");
-                    djs_showTok(left,DJS_DEBUG);
+                    djs_showTok(&left,DJS_DEBUG);
                     DBG("RIGHT");
-                    djs_showTok(right,DJS_DEBUG);
+                    djs_showTok(&right,DJS_DEBUG);
 
                     ns = djs_st_value_done;
                     str = right;
                     is  = right.bs -1; // -1 because loop incrs
-                    if (djs_strEql(kt,ss)) {
+                    if (djs_strEql(&kt,ss)) {
                         *vt = left;
                         vt->t = _djs_valid_untyped;
-                        vt->t = djs_detType(*vt);
+                        vt->t = djs_detType(vt);
                         djs_trim(vt);
                         return true;
                     }
@@ -336,23 +335,23 @@ bool djs_findNamed(const djs_tok_t st, const char *ss, djs_tok_t *vt) {
 };
 
 
-bool djs_getStr(const djs_tok_t t, char *s, int sl) {
-    int len = t.es-t.bs+1;
+bool djs_getStr(const djs_tok_t *t, char *s, int sl) {
+    int len = t->es-t->bs+1;
     if (len > (sl-1)) return false;
     int i = 0;
     while (i<len) {
-        s[i] = t.bs[i];
+        s[i] = t->bs[i];
         i++;
     }
     s[i] = 0;
     return true;
 };
 
-bool djs_getBool(const djs_tok_t t, bool *v) {
+bool djs_getBool(const djs_tok_t *t, bool *v) {
 // note this functon will try to convert a naked value
 //  or a string. Obviously, the string still needs to look
 //  like true or false.
-    if ((t.t == djs_naked) || (t.t == djs_string)) {
+    if ((t->t == djs_naked) || (t->t == djs_string)) {
         char temp[20];
         djs_getStr(t,temp,20);
         if (strnlen(temp,20) < 3) return false;
@@ -370,11 +369,11 @@ bool djs_getBool(const djs_tok_t t, bool *v) {
     return false;
 };
 
-bool djs_getInt(const djs_tok_t t, int *v) {
+bool djs_getInt(const djs_tok_t *t, int *v) {
 // note this functon will try to convert a naked value
 //  or a string. Obviously, the string still needs to look
 //  like a number.
-    if ((t.t == djs_naked) || (t.t == djs_string)) {
+    if ((t->t == djs_naked) || (t->t == djs_string)) {
         char temp[20];
         char *eptr;
         djs_getStr(t,temp,20);
@@ -389,6 +388,6 @@ bool djs_getInt(const djs_tok_t t, int *v) {
     return false;
 }
 
-bool djs_valid(const djs_tok_t st) {
-    return (st.t != _djs_na) && st.bs && st.es;
+bool djs_valid(const djs_tok_t *st) {
+    return (st->t != _djs_na) && st->bs && st->es;
 }
