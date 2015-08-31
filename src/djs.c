@@ -335,7 +335,18 @@ bool djs_findNamed(const djs_tok_t *st, const char *ss, djs_tok_t *vt) {
 };
 
 
+bool djs_getStr_noCopy(const djs_tok_t *t, 
+                       const char **start, 
+                       const char **end) {
+    if (!t->bs || !t->es) return false;
+    *start = t->bs;
+    *end   = t->es;
+    return true;
+}
+
+
 bool djs_getStr(const djs_tok_t *t, char *s, int sl) {
+    if (!t->bs || !t->es) return false;
     int len = t->es-t->bs+1;
     if (len > (sl-1)) return false;
     int i = 0;

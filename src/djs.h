@@ -29,17 +29,18 @@ extern "C" {
 
 
 typedef enum djs_type_t {
-    _djs_na = 0,
+    _djs_na = 0,         // - an invalid or uninitialized tok
     _djs_valid_untyped,  // this is a state for a token that as been
     // initialized by that detType has not been
     // called on yet
     djs_array,
     djs_hash,
-    djs_string,
-    djs_naked,
+    djs_string,          // - a quoted scalar thing
+    djs_naked,           // - an unquoted scalar thing (number or bool)
 }
 djs_type_t;
 
+/// used internally by parsing state machine
 typedef enum djs_state_t {
     djs_st_start,
     djs_st_in_key,
@@ -49,6 +50,9 @@ typedef enum djs_state_t {
     djs_all_done,
 } djs_state_t;
 
+/// the token itself. Tokens are very simple and small. They
+/// contains pointers to the beginning and end of whatever 
+/// that thing is, as well as a type descriptor for convenience.
 typedef struct djs_tok_t {
     const char *bs;
     const char *es;
@@ -83,9 +87,20 @@ bool      djs_getInt(const djs_tok_t *t, int *v);
 bool      djs_getBool(const djs_tok_t *t, bool *b);
 
 /// extract an string value from a token. Will return true the token
-/// was valid anad if the receiving string is long enough. naked values
+/// was valid and if the receiving string is long enough. naked values
 /// like integers or booleans will be returned as strings
 bool      djs_getStr(const djs_tok_t *t, char *s, int sl);
+
+/// extract an string value from a token without copying 
+/// anything. Will return true if the token
+/// was valid. A pointer to the first and last char in the string
+/// are returned. These are pointers to the original buffer, so
+/// they are NOT NULL TERMINATED. Moreover, they are defined as 
+/// const. You should not update the string returned.
+bool      djs_getStr_noCopy(const djs_tok_t *t, 
+                            const char **start, 
+                            const char **end);
+
 
 /// return true if the token is initialized and valid
 bool      djs_valid(const djs_tok_t *st);
