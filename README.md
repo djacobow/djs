@@ -40,7 +40,7 @@ accessed with the get routines.
 For brevity, this example does no error checking, but most routines
 provide return values for checking success.
 
-```
+```C
 int main(int argc, char *argv[]) {
 
     const char *json = "{\"foo\":\"fooval\", \"bar\": 42, \"baz\": [ false, 1,
