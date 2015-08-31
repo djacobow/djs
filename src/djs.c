@@ -385,5 +385,5 @@ bool djs_getInt(const djs_tok_t t, int *v) {
 }
 
 bool djs_valid(const djs_tok_t st) {
-    return (st.t != _djs_na);
+    return (st.t != _djs_na) && st.bs && st.es;
 }
