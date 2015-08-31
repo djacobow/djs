@@ -99,8 +99,13 @@ const char *djs_type2str(djs_tok_t t) {
 void djs_showTok(const djs_tok_t t, bool show) {
     if (!show) return;
     if (t.t != _djs_na) {
-        printf("tok [%llx,%llx,%d] (%s) >>",
-               t.bs,t.es,t.es-t.bs, djs_type2str(t));
+#if (__SIZEOF_POINTER__ == 8)
+            printf("tok [%lx,%lx,%lu] (%s) >>",
+               (uint64_t)t.bs,(uint64_t)t.es,(uint64_t)(t.es-t.bs), djs_type2str(t));
+#else
+            printf("tok [%x,%x,%d] (%s) >>",
+               (uint32_t)t.bs,(uint32_t)t.es,t.es-t.bs, djs_type2str(t));
+#endif
         for (const char *is=t.bs; is<=t.es; is++) {
             printf("%c",*is);
         }
