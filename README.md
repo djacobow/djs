@@ -16,6 +16,9 @@ does come with a price: performance can be slow, particularly when
 working with long JSON strings that do not use much hierarchy (like 
 a very long array or object with many members)
 
+As written, this library is suitable for Arduino or other low-
+memory embedded system.
+
 ### Pros
 
 * very small code size, written in C
