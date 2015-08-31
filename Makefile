@@ -3,21 +3,17 @@ CC=g++
 SRCDIRS      = src
 
 CSRCS        = src/djs.c
-CPPSRCS      = src/test.cpp
 
-EXECUTABLE   = testexe 
 INC_DIRS     = -Isrc
 LIB_DIRS     = 
-LIBS         = -lpthread -lPocoNet -lPocoFoundation
-CFLAGS       = -g -Wall -O0 -fno-rtti -std=c++11
+LIBS         = 
+CFLAGS       = -g -Wall -Os -fno-rtti -std=c++11
 
 LDFLAGS      = 
 
 COBJS        = $(CSRCS:%.c=%.o)
-CPPOBJS      = $(CPPSRCS:%.cpp=%.o)
-OBJS         = $(COBJS) $(CPPOBJS)
 
-all: $(EXECUTABLE) 
+all: testexe example
 
 .PHONY: doxy
 
@@ -28,8 +24,11 @@ doxyfile.inc: Makefile
 doxy: doxyfile.inc $(SRCS)
 	doxygen Doxyfile.mk
 
-$(EXECUTABLE): $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o$(EXECUTABLE) $(LIB_DIRS) $(LIBS)
+testexe: $(COBJS) src/test.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(COBJS) src/test.o -o testexe $(LIB_DIRS) $(LIBS)
+
+example: $(COBJS) src/example.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(COBJS) src/example.o -o example $(LIB_DIRS) $(LIBS)
 
 .cpp.o:
 	$(CC) -c  $(CFLAGS) $(INC_DIRS) $< -o $@
@@ -38,6 +37,6 @@ $(EXECUTABLE): $(OBJS)
 	$(CC) -c  $(CFLAGS) $(INC_DIRS) $< -o $@
 
 clean:
-	rm -f $(EXECUTABLE) $(OBJS) doxyfile.inc 
+	rm -f testexe example $(COBJS) src/test.o src/example.o doxyfile.inc 
 	rm -rf html
 
