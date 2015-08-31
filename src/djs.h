@@ -8,29 +8,30 @@ extern "C" {
 #endif
 
 typedef enum djs_type_t {
- _djs_na = 0,
- _djs_valid_untyped,  // this is a state for a token that as been 
-                      // initialized by that detType has not been  
-                      // called on yet
- djs_array,
- djs_hash,
- djs_string,
- djs_naked,
-} djs_type_t;
+    _djs_na = 0,
+    _djs_valid_untyped,  // this is a state for a token that as been
+    // initialized by that detType has not been
+    // called on yet
+    djs_array,
+    djs_hash,
+    djs_string,
+    djs_naked,
+}
+djs_type_t;
 
 typedef enum djs_state_t {
- djs_st_start,
- djs_st_in_key,
- djs_st_key_done,
- djs_st_in_value,
- djs_st_value_done,
- djs_all_done,
+    djs_st_start,
+    djs_st_in_key,
+    djs_st_key_done,
+    djs_st_in_value,
+    djs_st_value_done,
+    djs_all_done,
 } djs_state_t;
 
 typedef struct djs_tok_t {
- const char *bs;
- const char *es;
- djs_type_t t;
+    const char *bs;
+    const char *es;
+    djs_type_t t;
 } djs_tok_t;
 
 
