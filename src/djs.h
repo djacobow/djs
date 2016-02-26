@@ -7,16 +7,29 @@
 //  parse, aimed at embedded platforms with highly limited resources,
 //  particularly, memory.
 //
+//  This is a somewhat "loose" "do what I mean" implementation, so 
+//  sticklers for matching the specification exactly will not be happy. 
+//  For example, if you have JSON like
+//
+//  { "foo": "true", "bar": "123" }
+//
+//  ... and request foo as a bool and bar as an integer, you'll get converted
+//  values rather than an  error. 
+//
+//  This implementation also is cool with trailing commas, which 
+//   about which real JSON parsers get upset.
+//
 // Pros:
 //   - small, simple, c-only
 //   - allocates no memory (operates on original string buffer)
 //   - no fp stuff linked in
+//   - tolerant of slightly off-kilter json
 //
 // Cons:
+//   - NOT Unicode-aware. This is a plain ascii implementation.
 //   - not fully json compliant
 //   - floating point values not handled
 //     (treated as ints up to the decimal point)
-//   - not Unicode-aware. This is a plain ascii implementation.
 //   - because no tree is created, accessing many members of
 //     a json string will require repeated scans of the string;
 //     This trades time for space.
@@ -82,16 +95,17 @@ void      djs_showTok(const djs_tok_t *t, bool show = true);
 /// token was an interger, or could be converted to one from a string
 bool      djs_getInt(const djs_tok_t *t, int *v);
 
-/// extract an bool value from a token. Will return true if the
-/// token was an bool , or could be converted to one from a string
+/// extract a bool value from a token. Will return true if the
+/// token was a bool , or could be converted to one from a string
 bool      djs_getBool(const djs_tok_t *t, bool *b);
 
-/// extract an string value from a token. Will return true the token
-/// was valid and if the receiving string is long enough. naked values
+/// extract a string value from a token. Will return true if 
+/// the token was valid and if the receiving string is long 
+/// enough to hold it. naked (unquoted) values
 /// like integers or booleans will be returned as strings
 bool      djs_getStr(const djs_tok_t *t, char *s, int sl);
 
-/// extract an string value from a token without copying 
+/// extract a string value from a token without copying 
 /// anything. Will return true if the token
 /// was valid. A pointer to the first and last char in the string
 /// are returned. These are pointers to the original buffer, so
