@@ -16,8 +16,9 @@
 //  ... and request foo as a bool and bar as an integer, you'll get converted
 //  values rather than an  error. 
 //
-//  This implementation also is cool with trailing commas, which 
-//   about which real JSON parsers get upset.
+//  This implementation also is cool with trailing commas and
+//   unquoted key names, both of which upset wreal JSON parsers.
+//   (though they're ok in javascript)
 //
 // Pros:
 //   - small, simple, c-only
